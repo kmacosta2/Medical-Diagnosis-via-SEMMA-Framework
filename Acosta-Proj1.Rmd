@@ -1,0 +1,62 @@
+---
+output: 
+  pdf_document:
+    keep_tex: true
+    fig_caption: true
+    latex_engine: pdflatex
+    number_sections: true
+    toc: true
+    toc_depth: 4
+title: "Computer Project 1: SEMMA with Regularized Regression"
+author: 
+- Kevin Acosta^[kmacosta2@utep.edu]
+- University of Texas at El Paso (UTEP) 
+date: "`r format(Sys.time(), '%B %d, %Y')`"
+geometry: margin=1in
+fontsize: 11pt
+spacing: single
+header-includes:
+- \usepackage{amsmath}
+- \usepackage{amssymb, bm}
+- \usepackage{amsfonts}
+- \usepackage{amsthm}
+- \usepackage{fancyhdr}
+- \pagestyle{fancy}
+- \fancyhf{}
+- \rhead{STAT 5494-- Statistical Machine Learning}
+- \lhead{Intro to Python}
+- \cfoot{\thepage}
+- \usepackage{algorithm}
+- \usepackage[noend]{algpseudocode}
+
+---
+<!-- QUESTION ONE: WHAT --> 
+\noindent\rule{17.5cm}{0.8pt}
+
+# Data Import
+
+Bring the data into R script. 
+
+```{r}
+data <- read.csv("/Users/kevinacosta/Desktop/Stats ML 2/Comp Proj 01/diabetes_data_upload.csv")
+dim(data)
+summary(data)
+head(data)
+```
+\section{Exploratory Data Analysis}
+
+```{r eval=FALSE}
+   install.packages("tidyverse")
+```
+
+```{r}
+   library(tidyverse)
+response <- data$class
+p_values <- numeric(ncol(data) - 1)
+
+for (i in 1:(ncol(data) - 1)) {
+  print("..")
+}
+```
+
+You can write in LateX as well. For example, here is a vector $\bm{\beta}$. 
