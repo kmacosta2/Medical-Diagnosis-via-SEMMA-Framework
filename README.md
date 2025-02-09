@@ -1,5 +1,5 @@
 # Diabetes Risk Prediction: via SEMMA Stats Framework
-# A Spontaneous Exploration with Regularized Logistic Regression
+A exploration with Regularized Logistic Regression
 
 This repository documents a project where I explore statistical machine learning concepts, focusing on binary classification using regularized logistic regression. The project serves as means of gaining experience with the SEMMA (Sample-Explore-Modify-Model-Assess) methodology in a real-world dataset.
 
