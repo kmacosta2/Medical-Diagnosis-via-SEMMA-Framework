@@ -7,7 +7,7 @@ output:
     number_sections: true
     toc: true
     toc_depth: 4
-title: "Computer Project 1: SEMMA w/ Regularized Logistic Regression"
+title: "Diabetes Risk prediction via SEMMA w/ Regularized Logistic Regression"
 author: 
 - Kevin Acosta^[kmacosta2@miners.utep.edu]
 - M.S. in Data & Information Sciences (UTEP)
@@ -23,8 +23,8 @@ header-includes:
 - \usepackage{fancyhdr}
 - \pagestyle{fancy}
 - \fancyhf{}
-- \rhead{STAT 5494-- Statistical Machine Learning}
-- \lhead{Intro to Python}
+- \rhead{}
+- \lhead{}
 - \cfoot{\thepage}
 - \usepackage{algorithm}
 - \usepackage[noend]{algpseudocode}
