@@ -10,7 +10,7 @@ output:
 title: "Computer Project 1: SEMMA w/ Regularized Logistic Regression"
 author: 
 - Kevin Acosta^[kmacosta2@miners.utep.edu]
-- University of Texas at El Paso (UTEP) 
+- M.S. in Data & Information Sciences (UTEP)
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
 fontsize: 11pt
@@ -34,27 +34,14 @@ header-includes:
 \noindent\rule{17.5cm}{0.8pt}
 
 # Data Import
-
-Bring the data into R script. 
-
 ```{r}
 data <- read.csv("/Users/kevinacosta/Desktop/Stats ML 2/Comp Proj 01/diabetes_data_upload.csv")
 dim(data)
 summary(data)
 head(data)[c(1,2,3),]
 ```
-I was able to load in the dataset using the builtin R function 'read.csv()'. Afterwards I can inspect the dimensions, summarize the dataset, and view the first three rows/samples.
 
 \section{Exploratory Data Analysis}
-
-Explore the data with EDA (Exploratory Data Analysis) by inspecting the variable
-types, outlying and possibly wrong records, and other issues. In particular,
-
-- Inspect the frequency distribution of the target variable class and see, e.g., whether we
-have an unbalanced classification problem.
-
-- Are there missing values? If so, handle them with an appropriate strategy such as listwise
-deletion or single/multiple imputation.
 
 ```{r}
 table(data$class) # simple frequency table
@@ -79,26 +66,12 @@ for (i in 1:(ncol(data)-1)) {
 After seeing the first frequency table, we can confirm this does resemble an unbalanced classification problem favoring 'positive' labels with 200 negative cases for Diabetes and 320 positive cases.
 Using a for loop I checked for every column/feature excluding our response variable and confirmed that there are no missing values found.
 
-
 \section{Variable Screening}
-
-Explore the marginal (bivariate) associations between class and each
-attribute/predictor. The involved tools depend on the type of the attribute:
-
-- For a continuous predictor, use the parametric two-sample $t$ test or the nonparametric
-Wilcoxon rank-sum test.
-
-- For a categorical predictor, use the $\chi^{2}$ test of independence or Fisher's exact test in case
-of small cell counts.
-
--- Optionally, you may also compute and visualize the correlation matrix. Nevertheless, be
-careful with the choice of the correlation measure.
 
 ```{r}
 #library(tidyverse)
 response <- data$class
 p_values <- numeric(ncol(data) - 1)
-
 
 data2 <- data
 data2[, 1:(ncol(data2) - 1)] <- lapply(data2[, 1:(ncol(data2) - 1)], as.factor)
@@ -146,18 +119,6 @@ dim(test_data)
 
 \section{Logistic Regression Modeling}
 
-We now build a logistic regression model for this medical
-diagnosis task.
-
-a) Fit the regularized logistic regression using the training data D1. While 'l1' regularization
-or LASSO is suggested here, you may use other penalty functions of your choice.
-Select the best tuning parameter 'lambda' using a validation method such as v-fold cross validation.
-Specify the criterion that you use for the selection.
-  -- Optionally, you may also consider including first-order interaction terms.
-
-b) Present your final 'best' model fit. Which variables are important predictors? Interpret the results.
-
-
 
 ```{r}
 library(glmnet)
@@ -187,8 +148,6 @@ In general and on average, the most relevant coefficients are:
 
 \section{Model Assessment/Deployment}
 
-Apply the final logistic model to the test data D2. Present
-the ROC curve and report the area under the curve, i.e., the C-index or C-statistic.
 ```{r}
 library(pROC)
 y_test <- as.factor(test_data$class)
