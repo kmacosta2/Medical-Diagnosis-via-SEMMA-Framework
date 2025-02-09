@@ -7,9 +7,9 @@ output:
     number_sections: true
     toc: true
     toc_depth: 4
-title: "Computer Project 1: SEMMA with Regularized Regression"
+title: "Computer Project 1: SEMMA w/ Regularized Logistic Regression"
 author: 
-- Kevin Acosta^[kmacosta2@utep.edu]
+- Kevin Acosta^[kmacosta2@miners.utep.edu]
 - University of Texas at El Paso (UTEP) 
 date: "`r format(Sys.time(), '%B %d, %Y')`"
 geometry: margin=1in
@@ -41,22 +41,169 @@ Bring the data into R script.
 data <- read.csv("/Users/kevinacosta/Desktop/Stats ML 2/Comp Proj 01/diabetes_data_upload.csv")
 dim(data)
 summary(data)
-head(data)
+head(data)[c(1,2,3),]
 ```
+I was able to load in the dataset using the builtin R function 'read.csv()'. Afterwards I can inspect the dimensions, summarize the dataset, and view the first three rows/samples.
+
 \section{Exploratory Data Analysis}
 
-```{r eval=FALSE}
-   install.packages("tidyverse")
-```
+Explore the data with EDA (Exploratory Data Analysis) by inspecting the variable
+types, outlying and possibly wrong records, and other issues. In particular,
+
+- Inspect the frequency distribution of the target variable class and see, e.g., whether we
+have an unbalanced classification problem.
+
+- Are there missing values? If so, handle them with an appropriate strategy such as listwise
+deletion or single/multiple imputation.
 
 ```{r}
-   library(tidyverse)
+table(data$class) # simple frequency table
+
+for (i in 1:(ncol(data)-1)) {
+  cat("Column:", colnames(data)[i],"--> ")
+  x <- data[,i]
+  cat("Number of unique values:", length(unique(x, incomparables=TRUE)),"\n")
+  # checking for missing values per column
+  col_count <- sum(is.na(x))
+  
+  if(col_count>0) {
+    cat("Missing Values:", col_count, "\n")
+  }
+  else {
+    cat("\t\tNONE Missing for this column\n")
+  }
+  
+}
+
+```
+After seeing the first frequency table, we can confirm this does resemble an unbalanced classification problem favoring 'positive' labels with 200 negative cases for Diabetes and 320 positive cases.
+Using a for loop I checked for every column/feature excluding our response variable and confirmed that there are no missing values found.
+
+
+\section{Variable Screening}
+
+Explore the marginal (bivariate) associations between class and each
+attribute/predictor. The involved tools depend on the type of the attribute:
+
+- For a continuous predictor, use the parametric two-sample $t$ test or the nonparametric
+Wilcoxon rank-sum test.
+
+- For a categorical predictor, use the $\chi^{2}$ test of independence or Fisher's exact test in case
+of small cell counts.
+
+-- Optionally, you may also compute and visualize the correlation matrix. Nevertheless, be
+careful with the choice of the correlation measure.
+
+```{r}
+#library(tidyverse)
 response <- data$class
 p_values <- numeric(ncol(data) - 1)
 
-for (i in 1:(ncol(data) - 1)) {
-  print("..")
+
+data2 <- data
+data2[, 1:(ncol(data2) - 1)] <- lapply(data2[, 1:(ncol(data2) - 1)], as.factor)
+
+for (i in 1:(ncol(data2) - 1)) {
+  attrib <- data2[, i]
+  
+  if (is.factor(attrib)){ # categorical attribute --> chi-squared test
+    cat_attr <- chisq.test(table(attrib, response))
+    p_values[i] <-  cat_attr$p.value
+  }
+  else{ # continuous attribute --> t-test
+    cont_attr <- t.test(attrib ~ response)
+    p_values[i] <- cont_attr$p.value
+  }
+  cat("Attribute: ", colnames(data2)[i], "\n\t\tP-value: ", p_values[i], "\n")
 }
+# identifying the statistically significant attributes
+significant_attrs <- which(p_values < 0.25 & !is.na(p_values))
+significant_names <- colnames(data2)[significant_attrs]
+
+print("Significant attributes based on level alpha 0.25:\n")
+print(significant_names)
 ```
 
-You can write in LateX as well. For example, here is a vector $\bm{\beta}$. 
+\section{Data Partition}
+
+Partition the data into two parts, the training data D1 and the test data
+D2, with a ratio of 2:1.
+```{r}
+data$Itching <- NULL
+data$delayed.healing <- NULL
+
+n_samples <- nrow(data)
+# 2/3 for train set below
+n_train <- round(n_samples * 0.67) - 1
+train <- sample(n_samples, n_train)
+train_data <- data[train,]
+test_data <- data[-train,]
+
+dim(train_data)
+dim(test_data)
+```
+
+
+\section{Logistic Regression Modeling}
+
+We now build a logistic regression model for this medical
+diagnosis task.
+
+a) Fit the regularized logistic regression using the training data D1. While 'l1' regularization
+or LASSO is suggested here, you may use other penalty functions of your choice.
+Select the best tuning parameter 'lambda' using a validation method such as v-fold cross validation.
+Specify the criterion that you use for the selection.
+  -- Optionally, you may also consider including first-order interaction terms.
+
+b) Present your final 'best' model fit. Which variables are important predictors? Interpret the results.
+
+
+
+```{r}
+library(glmnet)
+
+y <- as.factor(train_data$class)
+X <- model.matrix(class ~ ., data=train_data)[,-1] #
+# fitting a lasso logistic regression with cv to help select the best lambda value.
+cv_lasso_fit <- cv.glmnet(x=X,y=y, nfolds=10, family="binomial", alpha=1)
+best_lambda <- cv_lasso_fit$lambda.min
+#plot(cv_lasso_fit)
+
+# here we're simply fitting again but to include the best lambda & afterwards 
+# inspect the coefficients
+best_lasso <- glmnet(x=X, y=y, family="binomial", alpha=1, lambda = best_lambda)
+cat("Best lambda:", best_lambda)
+
+print("Final lasso model coefficients:")
+print(coef(best_lasso))
+
+```
+The model coefficient results presented above can vary from run to run, but as long as they have a value not zero, we would list them as significant to the model.
+
+In general and on average, the most relevant coefficients are: 
+'PolydipsiaYes'- (a lot of thirst is indicated with the highest positive coefficient), 
+'PolyuriaYes'- (excessive urination is also indicated by a large coefficient, so its another strong predictor of diabetes)
+'GenderMale'- (so just being male significantly decreases the odds of getting a diabetes diagnosis because the coefficient is negative!).
+
+\section{Model Assessment/Deployment}
+
+Apply the final logistic model to the test data D2. Present
+the ROC curve and report the area under the curve, i.e., the C-index or C-statistic.
+```{r}
+library(pROC)
+y_test <- as.factor(test_data$class)
+x_test <- model.matrix(class ~ ., data=test_data)[,-1]
+
+# predict probability for a positive classification/diagnosis
+y_pred <- predict(best_lasso, newx=x_test, type="response")
+
+# generate ROC curve and get AUC
+roc_curve <- roc(y_test, y_pred)
+auc_value <- auc(roc_curve)
+
+plot(roc_curve, col = "blue", main = "ROC Curve: Logistic Regression w/LASSO", print.auc = TRUE)
+
+print(paste("AUC/C-Statistic:", round(auc_value, 4)))
+```
+Overall the Logistic Regression Classifier's performance is very good at predicting what is considered the true positives in classifying patients with diabetes when they do in fact have it.
+
