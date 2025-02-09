@@ -128,7 +128,7 @@ X <- model.matrix(class ~ ., data=train_data)[,-1] #
 # fitting a lasso logistic regression with cv to help select the best lambda value.
 cv_lasso_fit <- cv.glmnet(x=X,y=y, nfolds=10, family="binomial", alpha=1)
 best_lambda <- cv_lasso_fit$lambda.min
-#plot(cv_lasso_fit)
+plot(cv_lasso_fit)
 
 # here we're simply fitting again but to include the best lambda & afterwards 
 # inspect the coefficients
